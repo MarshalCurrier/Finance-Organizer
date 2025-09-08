@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Organizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .upload-section {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .file-name {
+            margin-top: 1rem;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .results-section {
+            padding: 2rem;
+            display: none;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-card {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .category-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .category-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .category-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .category-amount.positive {
+            color: #059669;
+        }
+
+        .category-count {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .details-section {
+            margin-top: 2rem;
+        }
+
+        .details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .details-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .export-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .transaction-list {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .transaction-header {
+            background: #f9fafb;
+            padding: 1rem;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .transaction-header:hover {
+            background: #f3f4f6;
+        }
+
+        .category-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .category-total {
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .category-total.positive {
+            color: #059669;
+        }
+
+        .collapse-icon {
+            transition: transform 0.2s;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .collapse-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .transaction-content {
+            transition: max-height 0.3s ease-out;
+            overflow: hidden;
+        }
+
+        .transaction-content.collapsed {
+            max-height: 0;
+        }
+
+        .transaction-item {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            align-items: center;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-date {
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .transaction-business {
+            color: #374151;
+        }
+
+        .transaction-amount {
+            font-weight: 600;
+            text-align: right;
+            color: #dc2626;
+        }
+
+        .transaction-amount.positive {
+            color: #059669;
+        }
+
+        .move-transaction-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: background 0.2s;
+        }
+
+        .move-transaction-btn:hover {
+            background: #d97706;
+        }
+
+        .custom-category-card {
+            background: white;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .custom-category-card.has-transactions {
+            border-style: solid;
+            border-color: #059669;
+            color: #059669;
+        }
+
+        .transaction-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-dropdown {
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: white;
+        }
+
+        .net-summary {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .net-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .net-amount {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-content {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .modal-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: #5b21b6;
+        }
+
+        .modal-btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .modal-btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .modal-btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .keyword-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .keyword-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .keyword-item:last-child {
+            border-bottom: none;
+        }
+
+        .keyword-item:hover {
+            background: #f9fafb;
+        }
+
+        .keyword-remove-btn {
+            background: #fef2f2;
+            color: #dc2626;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .keyword-remove-btn:hover {
+            background: #fecaca;
+        }
+
+        @media (max-width: 768px) {
+            .transaction-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                text-align: left;
+            }
+            
+            .transaction-amount {
+                text-align: left;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal {
+                margin: 1rem;
+                width: calc(100% - 2rem);
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Finance Organizer</h1>
+            <p>Upload your Chase CSV file to organize and analyze your transactions</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <input type="file" id="csvFile" accept=".csv" class="file-input">
+                <label for="csvFile" class="file-input-button">Choose CSV File</label>
+            </div>
+            <div class="file-name" id="fileName"></div>
+        </div>
+
+        <div class="column-mapping-section" id="columnMapping" style="display: none;">
+            <div style="padding: 2rem; border-bottom: 1px solid #e5e7eb;">
+                <h2 style="margin-bottom: 1rem; color: #374151;">Map Your CSV Columns</h2>
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">Select which columns contain your date, business, and amount data:</p>
+                
+                <div class="preview-table" id="previewTable" style="margin-bottom: 1.5rem; overflow-x: auto;">
+                    <!-- CSV preview will be inserted here -->
+                </div>
+
+                <div class="column-selectors" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="selector-group">
+                        <label for="dateColumn" style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Date Column:</label>
+                        <select id="dateColumn" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem;">
+                            <option value="">Select column...</option>
+                        </select>
+                    </div>
+                    <div class="selector-group">
+                        <label for="businessColumn" style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Business Column:</label>
+                        <select id="businessColumn" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem;">
+                            <option value="">Select column...</option>
+                        </select>
+                    </div>
+                    <div class="selector-group">
+                        <label for="amountColumn" style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Amount Column:</label>
+                        <select id="amountColumn" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem;">
+                            <option value="">Select column...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="category-management" style="margin-top: 2rem; padding: 1.5rem; background: #f8fafc; border-radius: 10px; border: 1px solid #e5e7eb;">
+                    <h3 style="margin-bottom: 1rem; color: #374151;">Category Management</h3>
+                    <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.9rem;">Create custom categories before processing. Transactions that don't match any category will go to "Miscellaneous".</p>
+                    
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        <h4 style="margin-bottom: 1rem; color: #374151; font-size: 0.9rem;">Default Categories:</h4>
+                        <div id="defaultCategoriesDisplay" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                            <!-- Default categories will be shown here -->
+                        </div>
+                    </div>
+
+                    <h4 style="margin-bottom: 1rem; color: #374151; font-size: 0.9rem;">Your Custom Categories:</h4>
+                    
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;">
+                        <input type="text" id="newCategoryName" placeholder="New category name..." style="flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem;">
+                        <button onclick="createCategory()" class="export-btn">Add Category</button>
+                    </div>
+
+                    <div id="customCategories" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                        <!-- Custom categories will be shown here -->
+                    </div>
+                </div>
+
+                <button id="processBtn" class="file-input-button" onclick="processWithMapping()" disabled style="opacity: 0.5; margin-top: 1.5rem;">
+                    Process Transactions
+                </button>
+            </div>
+        </div>
+
+        <div class="results-section" id="results">
+            <div class="summary-grid" id="summaryGrid">
+                <!-- Category cards will be inserted here -->
+            </div>
+
+            <div class="net-summary">
+                <div class="net-title">Net Total</div>
+                <div class="net-amount" id="netAmount">$0.00</div>
+            </div>
+
+
+            <div class="details-section">
+                <div class="details-header">
+                    <h2 class="details-title">Transaction Details</h2>
+                    <button class="export-btn" onclick="exportToCSV()">Export CSV</button>
+                </div>
+                <div id="transactionDetails">
+                    <!-- Transaction details will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding keywords -->
+    <div id="modalOverlay" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header" id="modalHeader">Add Keyword</div>
+            <div class="modal-content" id="modalContent">
+                <!-- Content will be dynamically inserted -->
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="modalConfirmBtn">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let processedData = null;
+        let customCategories = {};
+
+        // Default category keywords - can be extended by user
+        let defaultCategories = {
+            bills: {
+                name: 'Bills',
+                keywords: ['CITY OF CHANDLER', 'LAKEVIEW LN SRV', 'CARDMEMBER SERV  WEB PYMT', 'TMOBILE', 'COMENITY', 'Synchrony', 'CVS/PHARMACY', 'TMOBILE POSTPAID', 'COX PHOENIX COMM', 'Marshal Currier  ExtrnlTfr  Marshal Currier WEB ID', 'SRP', 'AMERICAN EXPRESS ACH', 'SoFi Bank PL', 'Payment to Chase card ending in', 'AMFICU CK WEBXFR']
+            },
+            eating_out: {
+                name: 'Eating Out',
+                keywords: ['FLORIDINOS', 'JACK IN THE BOX', 'MCDONALD\'S', 'SONIC DRIVE IN', 'MCDONALDS', 'FILIBERTOS', 'CARLS JR', 'IHOP', 'SUSHI', 'TACO SPOT', 'FREDDY\'S', 'SUSHI STOP', 'FIBBER MAGEES', 'CYCLO', 'PICAZZOS', 'Spokes On Southern', 'JIMMY JOHNS', 'FLAVOREATERY', 'MR. PICKLES', 'CAFE RIO', 'DOORDASH', 'GOLDEN VALLEY', 'CORNISH PASTY', 'SPOOKY\'S SWIRLS', 'TACO BELL', '5GUYS', 'CULVERS', 'BARROS PIZZA', 'NANDO\'S MEXICAN', 'CHEBA HU', 'RED ROBIN', 'VERO', 'LOS FAVORITOS', 'DUNKIN', 'STARBUCKS', 'MI PATIO MEXICAN', 'BLACKBERRY', 'APPLEBEES', 'FILIBERTO', 'JAMBA JUICE', 'PIZZA TWIST', 'LEVEL 1 ARCADE', 'WENDY\'S', 'FIREHOUSE SUBS', 'BRUNCH SNOB', 'BEER RESEARCH', 'IN-N-OUT', 'FROZEN YOGURT', 'PUB N GRUB']
+            },
+            groceries: {
+                name: 'Groceries', 
+                keywords: ['COSTCO WHSE', 'FRYS-FOOD', 'BY INSTAC', 'VIA INSTAC', 'SAFEWAY', 'TRADER JOE', 'TOTAL WINE', 'ALBERTSONS', 'FOOD CITY', 'WINCO FOODS']
+            },
+            subs: {
+                name: 'Subscriptions',
+                keywords: ['NNT MICROSOFT*', 'LA FITNESS ESPORTA', 'HUMBLEBUNDL', 'LE-FLIXS.COM', 'Amazon Music', 'INST XFER  PRIVATEINTE', 'DollarShaveClubUS', 'NETFLIX.COM', 'ESPORTA', 'LA FITNESS', 'Microsoft*Ult', 'Audible']
+            }
+        };
+
+        // Load saved data from localStorage
+        function loadSavedData() {
+            const savedDefaultCategories = localStorage.getItem('financeOrganizer_defaultCategories');
+            const savedCustomCategories = localStorage.getItem('financeOrganizer_customCategories');
+            
+            if (savedDefaultCategories) {
+                defaultCategories = JSON.parse(savedDefaultCategories);
+            }
+            
+            if (savedCustomCategories) {
+                customCategories = JSON.parse(savedCustomCategories);
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('financeOrganizer_defaultCategories', JSON.stringify(defaultCategories));
+            localStorage.setItem('financeOrganizer_customCategories', JSON.stringify(customCategories));
+        }
+
+        // Convert defaultCategories format to old categories format for compatibility
+        function getCategories() {
+            const categories = {};
+            Object.entries(defaultCategories).forEach(([key, data]) => {
+                categories[key] = data.keywords;
+            });
+            return categories;
+        }
+
+        function categorizeTransaction(business) {
+            // Check default categories first
+            for (const [categoryKey, categoryData] of Object.entries(defaultCategories)) {
+                for (const keyword of categoryData.keywords) {
+                    if (business.toUpperCase().includes(keyword.toUpperCase())) {
+                        return categoryKey;
+                    }
+                }
+            }
+            
+            // Check custom categories keywords
+            for (const [categoryKey, categoryData] of Object.entries(customCategories)) {
+                if (categoryData.keywords) {
+                    for (const keyword of categoryData.keywords) {
+                        if (business.toLowerCase().includes(keyword.toLowerCase())) {
+                            return categoryKey;
+                        }
+                    }
+                }
+            }
+            
+            return 'misc';
+        }
+
+        function formatCurrency(amount) {
+            const absAmount = Math.abs(amount);
+            return amount >= 0 ? `$${absAmount.toFixed(2)}` : `-$${absAmount.toFixed(2)}`;
+        }
+
+        let csvData = null;
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const data = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                // Simple CSV parsing - handles quoted values
+                const columns = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let j = 0; j < line.length; j++) {
+                    const char = line[j];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        columns.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                columns.push(current.trim());
+                
+                data.push(columns);
+            }
+            
+            return data;
+        }
+
+        function showColumnMapping(csvText) {
+            csvData = parseCSV(csvText);
+            if (csvData.length < 2) {
+                alert('CSV file must have at least a header row and one data row.');
+                return;
+            }
+
+            const headers = csvData[0];
+            
+            // Show preview table
+            const previewTable = document.getElementById('previewTable');
+            let tableHTML = '<table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; font-size: 0.9rem;">';
+            
+            // Header row
+            tableHTML += '<tr style="background: #f9fafb;">';
+            headers.forEach((header, index) => {
+                tableHTML += `<th style="border: 1px solid #e5e7eb; padding: 8px; text-align: left; font-weight: 600;">Column ${index + 1}<br><small style="font-weight: normal; color: #6b7280;">${header}</small></th>`;
+            });
+            tableHTML += '</tr>';
+            
+            // Show first few data rows as preview
+            for (let i = 1; i <= Math.min(3, csvData.length - 1); i++) {
+                tableHTML += '<tr>';
+                csvData[i].forEach(cell => {
+                    tableHTML += `<td style="border: 1px solid #e5e7eb; padding: 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${cell}</td>`;
+                });
+                tableHTML += '</tr>';
+            }
+            tableHTML += '</table>';
+            
+            previewTable.innerHTML = tableHTML;
+
+            // Populate dropdowns
+            const selectors = ['dateColumn', 'businessColumn', 'amountColumn'];
+            selectors.forEach(selectorId => {
+                const select = document.getElementById(selectorId);
+                select.innerHTML = '<option value="">Select column...</option>';
+                headers.forEach((header, index) => {
+                    select.innerHTML += `<option value="${index}">Column ${index + 1}: ${header}</option>`;
+                });
+            });
+
+            // Auto-detect common column names
+            headers.forEach((header, index) => {
+                const headerLower = header.toLowerCase();
+                if (headerLower.includes('date') || headerLower.includes('posting')) {
+                    document.getElementById('dateColumn').value = index;
+                } else if (headerLower.includes('description') || headerLower.includes('merchant') || headerLower.includes('store') || headerLower.includes('business')) {
+                    document.getElementById('businessColumn').value = index;
+                } else if (headerLower.includes('amount') || headerLower.includes('debit') || headerLower.includes('credit')) {
+                    document.getElementById('amountColumn').value = index;
+                }
+            });
+
+            // Show column mapping section
+            document.getElementById('columnMapping').style.display = 'block';
+            updateProcessButton();
+        }
+
+        function updateProcessButton() {
+            const dateCol = document.getElementById('dateColumn').value;
+            const businessCol = document.getElementById('businessColumn').value;
+            const amountCol = document.getElementById('amountColumn').value;
+            
+            const processBtn = document.getElementById('processBtn');
+            const allSelected = dateCol !== '' && businessCol !== '' && amountCol !== '';
+            
+            processBtn.disabled = !allSelected;
+            processBtn.style.opacity = allSelected ? '1' : '0.5';
+        }
+
+        function processWithMapping() {
+            const dateColIndex = parseInt(document.getElementById('dateColumn').value);
+            const businessColIndex = parseInt(document.getElementById('businessColumn').value);
+            const amountColIndex = parseInt(document.getElementById('amountColumn').value);
+
+            const transactions = {
+                income: [],
+                bills: [],
+                eating_out: [],
+                groceries: [],
+                subs: [],
+                misc: []
+            };
+
+            // Initialize custom categories in transactions object
+            Object.keys(customCategories).forEach(key => {
+                transactions[key] = [];
+            });
+
+            // Process data rows (skip header)
+            for (let i = 1; i < csvData.length; i++) {
+                const row = csvData[i];
+                if (row.length <= Math.max(dateColIndex, businessColIndex, amountColIndex)) continue;
+
+                const date = row[dateColIndex]?.replace(/"/g, '').trim();
+                const business = row[businessColIndex]?.replace(/"/g, '').trim();
+                const amount = parseFloat(row[amountColIndex]?.replace(/"/g, '').replace(/[,$]/g, ''));
+
+                if (!date || !business || isNaN(amount)) continue;
+
+                const transaction = { date, business, amount };
+
+                if (amount > 0) {
+                    transactions.income.push(transaction);
+                } else {
+                    const category = categorizeTransaction(business);
+                    if (!transactions[category]) {
+                        transactions[category] = [];
+                    }
+                    transactions[category].push(transaction);
+                    
+                    // Update custom category tracking
+                    if (customCategories[category]) {
+                        customCategories[category].transactions.push(transaction);
+                    }
+                }
+            }
+
+            displayResults(transactions);
+        }
+
+        function displayResults(data) {
+            processedData = data;
+            
+            // Calculate totals
+            const totals = {};
+            let totalExpenses = 0;
+            let totalIncome = 0;
+
+            for (const [category, transactions] of Object.entries(data)) {
+                if (transactions && transactions.length > 0) {
+                    const total = transactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+                    totals[category] = total;
+                    
+                    if (category === 'income') {
+                        totalIncome = total;
+                    } else {
+                        totalExpenses += total;
+                    }
+                }
+            }
+
+            const netTotal = totalIncome - totalExpenses;
+
+            // Display summary cards
+            const summaryGrid = document.getElementById('summaryGrid');
+            summaryGrid.innerHTML = '';
+
+            const categoryNames = {
+                income: 'Income',
+                misc: 'Miscellaneous'
+            };
+
+            // Add default categories
+            Object.entries(defaultCategories).forEach(([key, category]) => {
+                categoryNames[key] = category.name;
+            });
+
+            // Add custom categories
+            Object.entries(customCategories).forEach(([key, category]) => {
+                categoryNames[key] = category.name;
+            });
+
+            for (const [category, displayName] of Object.entries(categoryNames)) {
+                // Show all categories, even with 0 transactions, but only if they exist in data or are custom categories
+                const hasTransactions = data[category] && data[category].length > 0;
+                const isCustomCategory = customCategories[category];
+                
+                if (hasTransactions || isCustomCategory) {
+                    const transactionCount = data[category] ? data[category].length : 0;
+                    const amount = totals[category] || 0;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'category-card';
+                    card.innerHTML = `
+                        <div class="category-title">${displayName}</div>
+                        <div class="category-amount ${category === 'income' ? 'positive' : ''}">${formatCurrency(category === 'income' ? amount : -amount)}</div>
+                        <div class="category-count">${transactionCount} transaction${transactionCount !== 1 ? 's' : ''}</div>
+                    `;
+                    summaryGrid.appendChild(card);
+                }
+            }
+
+            // Display net total
+            document.getElementById('netAmount').textContent = formatCurrency(netTotal);
+            document.getElementById('netAmount').style.color = netTotal >= 0 ? '#059669' : '#dc2626';
+
+            // Display transaction details
+            displayTransactionDetails(data, categoryNames);
+
+            // Show results section
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function toggleCategory(sectionElement) {
+            const content = sectionElement.querySelector('.transaction-content');
+            const icon = sectionElement.querySelector('.collapse-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                // Expand
+                content.classList.remove('collapsed');
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.classList.remove('collapsed');
+                icon.textContent = '▼';
+            } else {
+                // Collapse
+                content.style.maxHeight = content.scrollHeight + 'px';
+                setTimeout(() => {
+                    content.classList.add('collapsed');
+                    content.style.maxHeight = '0';
+                }, 10);
+                icon.classList.add('collapsed');
+                icon.textContent = '▶';
+            }
+        }
+
+        function displayTransactionDetails(data, categoryNames) {
+            const detailsContainer = document.getElementById('transactionDetails');
+            detailsContainer.innerHTML = '';
+
+            // Sort categories to show them in a logical order (income first, then expenses, misc last)
+            const sortedCategories = Object.entries(categoryNames).sort(([a], [b]) => {
+                if (a === 'income') return -1;
+                if (b === 'income') return 1;
+                if (a === 'misc') return 1;
+                if (b === 'misc') return -1;
+                return 0;
+            });
+
+            for (const [category, displayName] of sortedCategories) {
+                if (data[category] && data[category].length > 0) {
+                    // Calculate category total
+                    const categoryTotal = data[category].reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                    
+                    const section = document.createElement('div');
+                    section.className = 'transaction-list';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'transaction-header';
+                    header.onclick = () => toggleCategory(section);
+                    
+                    header.innerHTML = `
+                        <div class="category-header-left">
+                            <span class="collapse-icon">▼</span>
+                            <span>${displayName}</span>
+                        </div>
+                        <div class="category-header-right">
+                            <span>${data[category].length} transaction${data[category].length !== 1 ? 's' : ''}</span>
+                            <span class="category-total ${category === 'income' ? 'positive' : ''}">${formatCurrency(categoryTotal)}</span>
+                        </div>
+                    `;
+                    
+                    section.appendChild(header);
+
+                    // Create content container for transactions
+                    const content = document.createElement('div');
+                    content.className = 'transaction-content';
+                    
+                    // Only Miscellaneous is expanded by default, others are collapsed
+                    if (category === 'misc') {
+                        content.style.maxHeight = 'none'; // Expanded
+                        header.querySelector('.collapse-icon').textContent = '▼';
+                    } else {
+                        content.classList.add('collapsed');
+                        content.style.maxHeight = '0'; // Collapsed
+                        header.querySelector('.collapse-icon').textContent = '▶';
+                        header.querySelector('.collapse-icon').classList.add('collapsed');
+                    }
+
+                    data[category].forEach(transaction => {
+                        const item = document.createElement('div');
+                        item.className = 'transaction-item';
+                        
+                        let controls = '';
+                        if (category === 'misc') {
+                            // Get all available categories including default and custom
+                            const defaultCategories = ['bills', 'eating_out', 'groceries', 'subs', 'misc'];
+                            const customCategoryKeys = Object.keys(customCategories);
+                            const allCategories = [...defaultCategories, ...customCategoryKeys];
+                            
+                            controls = `
+                                <div class="transaction-controls">
+                                    <select class="category-dropdown" onchange="moveTransaction(this, '${category}', ${data[category].indexOf(transaction)})">
+                                        ${allCategories.map(cat => {
+                                            let displayName;
+                                            if (cat === 'misc') displayName = 'Miscellaneous';
+                                            else if (cat === 'bills') displayName = 'Bills';
+                                            else if (cat === 'eating_out') displayName = 'Eating Out';
+                                            else if (cat === 'groceries') displayName = 'Groceries';
+                                            else if (cat === 'subs') displayName = 'Subscriptions';
+                                            else displayName = customCategories[cat]?.name || cat;
+                                            
+                                            return `<option value="${cat}" ${cat === category ? 'selected' : ''}>${displayName}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+                            `;
+                        }
+                        
+                        item.innerHTML = `
+                            <div class="transaction-date">${transaction.date}</div>
+                            <div class="transaction-business">${transaction.business}</div>
+                            <div class="transaction-amount ${transaction.amount > 0 ? 'positive' : ''}">${formatCurrency(transaction.amount)}</div>
+                            ${controls}
+                        `;
+                        content.appendChild(item);
+                    });
+
+                    section.appendChild(content);
+                    detailsContainer.appendChild(section);
+                }
+            }
+        }
+
+        function createCategory() {
+            const nameInput = document.getElementById('newCategoryName');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('Please enter a category name');
+                return;
+            }
+            
+            if (name.toLowerCase() === 'misc' || name.toLowerCase() === 'miscellaneous') {
+                alert('Cannot create a category named "misc" or "miscellaneous"');
+                return;
+            }
+            
+            const categoryKey = name.toLowerCase().replace(/\s+/g, '_');
+            
+            if (customCategories[categoryKey]) {
+                alert('Category already exists');
+                return;
+            }
+            
+            customCategories[categoryKey] = {
+                name: name,
+                transactions: [],
+                keywords: []
+            };
+            
+            // Always initialize in processedData if it exists
+            if (processedData) {
+                if (!processedData[categoryKey]) {
+                    processedData[categoryKey] = [];
+                }
+                displayResults(processedData);
+            }
+            
+            nameInput.value = '';
+            updateCustomCategoriesDisplay();
+            saveData();
+        }
+
+        function updateDefaultCategoriesDisplay() {
+            const container = document.getElementById('defaultCategoriesDisplay');
+            container.innerHTML = '';
+            
+            Object.entries(defaultCategories).forEach(([key, category]) => {
+                const card = document.createElement('div');
+                card.className = 'custom-category-card has-transactions';
+                card.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">${category.name}</div>
+                    <div style="font-size: 0.7rem; color: #6b7280; margin-bottom: 0.5rem; max-height: 60px; overflow-y: auto;">
+                        Keywords: ${category.keywords.length > 0 ? category.keywords.slice(0, 3).join(', ') + (category.keywords.length > 3 ? `... (+${category.keywords.length - 3} more)` : '') : 'none'}
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                        <button onclick="addDefaultKeyword('${key}')" style="background: #059669; color: white; border: none; padding: 3px 6px; border-radius: 3px; font-size: 0.7rem; cursor: pointer;">Add Keyword</button>
+                        <button onclick="viewDefaultKeywords('${key}')" style="background: #6366f1; color: white; border: none; padding: 3px 6px; border-radius: 3px; font-size: 0.7rem; cursor: pointer;">View All</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addDefaultKeyword(categoryKey) {
+            showModal(
+                `Add Keyword to ${defaultCategories[categoryKey].name}`,
+                `
+                    <p style="color: #6b7280; margin-bottom: 1rem;">
+                        Add a keyword to automatically categorize transactions.<br>
+                        <strong>Example:</strong> For "Nintendo CA1379638415 800-2553700 WA" just enter "Nintendo"
+                    </p>
+                    <input type="text" class="modal-input" id="keywordInput" placeholder="Enter keyword..." autofocus>
+                `,
+                'Add Keyword',
+                () => {
+                    const keyword = document.getElementById('keywordInput').value.trim();
+                    
+                    if (!keyword) {
+                        showError('Please enter a keyword');
+                        return false;
+                    }
+                    
+                    if (defaultCategories[categoryKey].keywords.includes(keyword)) {
+                        showError('Keyword already exists for this category');
+                        return false;
+                    }
+                    
+                    defaultCategories[categoryKey].keywords.push(keyword);
+                    updateDefaultCategoriesDisplay();
+                    saveData();
+                    
+                    // Offer to recategorize existing transactions
+                    if (processedData && processedData.misc && processedData.misc.length > 0) {
+                        setTimeout(() => {
+                            showConfirmModal(
+                                'Recategorize Existing Transactions?',
+                                `Would you like to automatically move existing transactions containing "${keyword}" to the ${defaultCategories[categoryKey].name} category?`,
+                                () => recategorizeByKeyword(keyword, categoryKey)
+                            );
+                        }, 100);
+                    }
+                    
+                    return true;
+                }
+            );
+        }
+
+        function viewDefaultKeywords(categoryKey) {
+            const category = defaultCategories[categoryKey];
+            
+            let keywordListHtml = '';
+            if (category.keywords.length === 0) {
+                keywordListHtml = '<p style="color: #6b7280; text-align: center; padding: 1rem;">No keywords defined for this category.</p>';
+            } else {
+                keywordListHtml = `
+                    <div class="keyword-list">
+                        ${category.keywords.map(keyword => `
+                            <div class="keyword-item">
+                                <span>${keyword}</span>
+                                <button class="keyword-remove-btn" onclick="removeDefaultKeyword('${categoryKey}', '${keyword}')">Remove</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            showModal(
+                `${category.name} Keywords`,
+                `
+                    <p style="color: #6b7280; margin-bottom: 1rem;">
+                        Keywords used to automatically categorize transactions into "${category.name}":
+                    </p>
+                    ${keywordListHtml}
+                `,
+                'Close',
+                () => true
+            );
+        }
+
+        function removeDefaultKeyword(categoryKey, keyword) {
+            const index = defaultCategories[categoryKey].keywords.indexOf(keyword);
+            if (index !== -1) {
+                defaultCategories[categoryKey].keywords.splice(index, 1);
+                updateDefaultCategoriesDisplay();
+                saveData();
+                closeModal();
+                setTimeout(() => viewDefaultKeywords(categoryKey), 100);
+            }
+        }
+
+        function updateCustomCategoriesDisplay() {
+            const container = document.getElementById('customCategories');
+            container.innerHTML = '';
+            
+            Object.entries(customCategories).forEach(([key, category]) => {
+                const card = document.createElement('div');
+                card.className = `custom-category-card ${category.transactions.length > 0 ? 'has-transactions' : ''}`;
+                card.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">${category.name}</div>
+                    <div style="font-size: 0.8rem; margin-bottom: 0.5rem;">${category.transactions.length} transactions</div>
+                    <div style="font-size: 0.7rem; color: #6b7280; margin-bottom: 0.5rem;">
+                        Keywords: ${category.keywords.length > 0 ? category.keywords.join(', ') : 'none'}
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                        <button onclick="addKeyword('${key}')" style="background: #059669; color: white; border: none; padding: 3px 6px; border-radius: 3px; font-size: 0.7rem; cursor: pointer;">Add Keyword</button>
+                        <button onclick="deleteCategory('${key}')" style="background: #dc2626; color: white; border: none; padding: 3px 6px; border-radius: 3px; font-size: 0.7rem; cursor: pointer;">Delete</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addKeyword(categoryKey) {
+            showModal(
+                `Add Keyword to ${customCategories[categoryKey].name}`,
+                `
+                    <p style="color: #6b7280; margin-bottom: 1rem;">
+                        Add a keyword to automatically categorize transactions.<br>
+                        <strong>Example:</strong> For "Nintendo CA1379638415 800-2553700 WA" just enter "Nintendo"
+                    </p>
+                    <input type="text" class="modal-input" id="keywordInput" placeholder="Enter keyword..." autofocus>
+                `,
+                'Add Keyword',
+                () => {
+                    const keyword = document.getElementById('keywordInput').value.trim();
+                    
+                    if (!keyword) {
+                        showError('Please enter a keyword');
+                        return false;
+                    }
+                    
+                    if (customCategories[categoryKey].keywords.includes(keyword)) {
+                        showError('Keyword already exists for this category');
+                        return false;
+                    }
+                    
+                    customCategories[categoryKey].keywords.push(keyword);
+                    updateCustomCategoriesDisplay();
+                    saveData();
+                    
+                    // Offer to recategorize existing transactions
+                    if (processedData && processedData.misc && processedData.misc.length > 0) {
+                        setTimeout(() => {
+                            showConfirmModal(
+                                'Recategorize Existing Transactions?',
+                                `Would you like to automatically move existing transactions containing "${keyword}" to the ${customCategories[categoryKey].name} category?`,
+                                () => recategorizeByKeyword(keyword, categoryKey)
+                            );
+                        }, 100);
+                    }
+                    
+                    return true;
+                }
+            );
+        }
+
+        function recategorizeByKeyword(keyword, targetCategory) {
+            let movedCount = 0;
+            
+            // Check misc transactions for the keyword
+            if (processedData.misc) {
+                for (let i = processedData.misc.length - 1; i >= 0; i--) {
+                    const transaction = processedData.misc[i];
+                    if (transaction.business.toLowerCase().includes(keyword.toLowerCase())) {
+                        // Move transaction
+                        processedData.misc.splice(i, 1);
+                        
+                        if (!processedData[targetCategory]) {
+                            processedData[targetCategory] = [];
+                        }
+                        processedData[targetCategory].push(transaction);
+                        
+                        if (customCategories[targetCategory]) {
+                            customCategories[targetCategory].transactions.push(transaction);
+                        }
+                        
+                        movedCount++;
+                    }
+                }
+            }
+            
+            // Get category name for display
+            let categoryName = targetCategory;
+            if (customCategories[targetCategory]) {
+                categoryName = customCategories[targetCategory].name;
+            } else if (defaultCategories[targetCategory]) {
+                categoryName = defaultCategories[targetCategory].name;
+            }
+            
+            if (movedCount > 0) {
+                showModal(
+                    'Transactions Moved',
+                    `<p style="color: #374151;">✅ Moved ${movedCount} transaction${movedCount !== 1 ? 's' : ''} containing "${keyword}" to the ${categoryName} category.</p>`,
+                    'OK',
+                    () => true
+                );
+                updateCustomCategoriesDisplay();
+                displayResults(processedData);
+            } else {
+                showModal(
+                    'No Matches Found',
+                    `<p style="color: #374151;">No transactions found containing "${keyword}".</p>`,
+                    'OK',
+                    () => true
+                );
+            }
+        }
+
+        function deleteCategory(categoryKey) {
+            showConfirmModal(
+                'Delete Category',
+                `Are you sure you want to delete the "${customCategories[categoryKey].name}" category? All transactions will be moved back to Miscellaneous.`,
+                () => {
+                    // Move transactions back to misc
+                    if (processedData && processedData[categoryKey]) {
+                        processedData.misc.push(...processedData[categoryKey]);
+                        delete processedData[categoryKey];
+                    }
+                    
+                    delete customCategories[categoryKey];
+                    updateCustomCategoriesDisplay();
+                    saveData();
+                    
+                    if (processedData) {
+                        displayResults(processedData);
+                    }
+                }
+            );
+        }
+
+        function moveTransaction(selectElement, fromCategory, transactionIndex) {
+            const toCategory = selectElement.value;
+            
+            if (fromCategory === toCategory) return;
+            
+            const transaction = processedData[fromCategory][transactionIndex];
+            
+            // Remove from old category
+            processedData[fromCategory].splice(transactionIndex, 1);
+            
+            // Add to new category (ensure it exists)
+            if (!processedData[toCategory]) {
+                processedData[toCategory] = [];
+            }
+            processedData[toCategory].push(transaction);
+            
+            // Update custom categories tracking
+            if (customCategories[toCategory]) {
+                customCategories[toCategory].transactions.push(transaction);
+            }
+            if (customCategories[fromCategory]) {
+                const idx = customCategories[fromCategory].transactions.findIndex(t => 
+                    t.date === transaction.date && t.business === transaction.business && t.amount === transaction.amount
+                );
+                if (idx !== -1) {
+                    customCategories[fromCategory].transactions.splice(idx, 1);
+                }
+            }
+            
+            updateCustomCategoriesDisplay();
+            displayResults(processedData);
+        }
+
+        function exportToCSV() {
+            if (!processedData) return;
+
+            // Calculate totals for each category
+            const categoryTotals = {};
+            let totalExpenses = 0;
+            let totalIncome = 0;
+
+            const categoryNames = {
+                income: 'Income',
+                misc: 'Miscellaneous'
+            };
+
+            // Add default categories
+            Object.entries(defaultCategories).forEach(([key, category]) => {
+                categoryNames[key] = category.name;
+            });
+
+            // Add custom categories to export
+            Object.entries(customCategories).forEach(([key, category]) => {
+                categoryNames[key] = category.name;
+            });
+
+            // Calculate totals
+            for (const [category, displayName] of Object.entries(categoryNames)) {
+                if (processedData[category] && processedData[category].length > 0) {
+                    const total = processedData[category].reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                    categoryTotals[category] = total;
+                    
+                    if (category === 'income') {
+                        totalIncome += Math.abs(total);
+                    } else {
+                        totalExpenses += Math.abs(total);
+                    }
+                }
+            }
+
+            const netTotal = totalIncome - totalExpenses;
+
+            // Start CSV with summary at the top
+            let csvContent = 'SUMMARY,,,TOTAL\n';
+            csvContent += '=================,,,=================\n';
+            
+            // Add category totals
+            for (const [category, displayName] of Object.entries(categoryNames)) {
+                if (categoryTotals[category]) {
+                    const formattedAmount = categoryTotals[category].toFixed(2);
+                    csvContent += `"${displayName} Total",,,"${formattedAmount}"\n`;
+                }
+            }
+            
+            csvContent += ',,,""\n'; // Empty row
+            csvContent += `"Total Expenses",,,"${totalExpenses.toFixed(2)}"\n`;
+            csvContent += `"Total Income",,,"${totalIncome.toFixed(2)}"\n`;
+            csvContent += `"Net Total",,,"${netTotal.toFixed(2)}"\n`;
+            csvContent += ',,,""\n'; // Empty row
+            csvContent += '=================,,,=================\n';
+            csvContent += ',,,""\n'; // Empty row
+            
+            // Add detailed transactions
+            csvContent += 'Category,Date,Business,Amount\n';
+            
+            for (const [category, displayName] of Object.entries(categoryNames)) {
+                if (processedData[category] && processedData[category].length > 0) {
+                    // Add category header
+                    csvContent += `"${displayName.toUpperCase()}",,,\n`;
+                    
+                    // Add transactions
+                    processedData[category].forEach(transaction => {
+                        csvContent += `"${displayName}","${transaction.date}","${transaction.business}","${transaction.amount}"\n`;
+                    });
+                    
+                    // Add category total
+                    csvContent += `"${displayName} SUBTOTAL",,,"${categoryTotals[category].toFixed(2)}"\n`;
+                    csvContent += ',,,""\n'; // Empty row between categories
+                }
+            }
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'organized-transactions.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // File upload handling
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('fileName').textContent = `Selected: ${file.name}`;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvText = e.target.result;
+                showColumnMapping(csvText);
+            };
+            reader.readAsText(file);
+        });
+
+        // Add event listeners for column selection changes
+        document.getElementById('dateColumn').addEventListener('change', updateProcessButton);
+        document.getElementById('businessColumn').addEventListener('change', updateProcessButton);
+        document.getElementById('amountColumn').addEventListener('change', updateProcessButton);
+
+        // Modal management functions
+        function showModal(title, content, confirmText, onConfirm) {
+            document.getElementById('modalHeader').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modalConfirmBtn').textContent = confirmText;
+            document.getElementById('modalConfirmBtn').onclick = () => {
+                if (onConfirm && onConfirm()) {
+                    closeModal();
+                }
+            };
+            document.getElementById('modalOverlay').style.display = 'flex';
+            
+            // Focus on input if it exists
+            setTimeout(() => {
+                const input = document.getElementById('keywordInput');
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function showConfirmModal(title, message, onConfirm) {
+            showModal(
+                title,
+                `<p style="color: #374151;">${message}</p>`,
+                'Confirm',
+                () => {
+                    if (onConfirm) onConfirm();
+                    return true;
+                }
+            );
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'color: #dc2626; background: #fef2f2; padding: 0.5rem; border-radius: 4px; margin-bottom: 1rem; border: 1px solid #fecaca;';
+            errorDiv.textContent = message;
+            
+            const existingError = document.querySelector('.error-message');
+            if (existingError) existingError.remove();
+            
+            errorDiv.className = 'error-message';
+            document.getElementById('modalContent').prepend(errorDiv);
+            
+            setTimeout(() => errorDiv.remove(), 3000);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedData();
+            updateDefaultCategoriesDisplay();
+            updateCustomCategoriesDisplay();
+        });
+    </script>
+</body>
+</html>
